@@ -28,14 +28,12 @@ IF(ParaView_FOUND)
   OPTION(INSTALL_IN_PARAVIEW "Should the ParaView plugin be installed?" ON)
 ELSE()
   FIND_PACKAGE(VTK)
-  IF(OGS_BUILD_GUI AND VTK_VERSION VERSION_LESS 6.0.0)
-    MESSAGE(FATAL_ERROR "VTK not found but is required! Minimum version: VTK 5.8.x")
-  ENDIF()
-  INCLUDE( ${VTK_USE_FILE} )
 ENDIF()
-FIND_PACKAGE(GTest)
-IF(OGS_BUILD_GUI)
-	ADD_DEFINITIONS(-DOGS_BUILD_GUI)
+
+IF(VTK_USE_FILE)
+  INCLUDE( ${VTK_USE_FILE} )
+ELSE()
+  MESSAGE(FATAL_ERROR "Please set VTK_DIR or ParaView_DIR")
 ENDIF()
 
 # Offer the user the choice of overriding the installation directories
@@ -105,10 +103,11 @@ ELSE()
     RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin)
 ENDIF()
 
-# Tests are only built when this is built standalone
-IF (GTEST_FOUND AND CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
-	ADD_SUBDIRECTORY (tests)
-ENDIF () # GTEST_FOUND
+# Testing framework
+OPTION (BUILD_TESTING "Build testing framework" ON)
+IF (BUILD_TESTING)
+  ADD_SUBDIRECTORY (tests)
+ENDIF()
 
 # Add all targets to the build-tree export set
 EXPORT(TARGETS VtkFbxConverter vtk_fbx_converter
